@@ -1,6 +1,4 @@
 import styled from 'styled-components';
-import movie1 from '../assets/img/image 3.png';
-import movie2 from '../assets/img/image 6.png';
 import { React, useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -10,7 +8,7 @@ import axios from "axios";
 function Movie(props) {
     return (
         <MovieTag>
-            <Link to={"/movieSchedule"}>
+            <Link to={`/sessoes/${props.id}`}>
                 <img src={props.img} alt={props.title}></img>
             </Link>
         </MovieTag>
@@ -26,9 +24,7 @@ export default function Movies() {
     useEffect(() => {
         const promise = axios.get("https://mock-api.driven.com.br/api/v5/cineflex/movies");
         promise.then((promise) => setMovies(promise.data));
-        promise.catch(() => console.log("deu ruim"));
     }, []);
-    console.log(movies);
     return (
         <>
             <Info>Selecione o filme</Info>
@@ -39,6 +35,9 @@ export default function Movies() {
 
     );
 }
+
+
+
 
 const Info = styled.div`
     font-family: 'Roboto', sans-serif;
