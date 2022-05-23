@@ -36,7 +36,7 @@ function Seat(props) {
         <SeatTag onClick={() => select(props.isAvailable, setSelected, selected, props.seatsPurchase, props.id, props.setSeatsPurchase, props.setSeatsNumbers, props.seatsNumbers, props.name)} selected={selected} isAvailable={props.isAvailable}>{props.name}</SeatTag>
     );
 }
-function order(name, cpf, seatsPurchase, e, title, date, seatsNumbers, setOrderDetails) {
+function order(name, cpf, seatsPurchase, e, title, date, seatsNumbers, setOrderDetails, hour, day) {
     if (!(cpf.length === 11)) {
         alert("Cpf inválido");
     }
@@ -53,7 +53,9 @@ function order(name, cpf, seatsPurchase, e, title, date, seatsNumbers, setOrderD
             date,
             seats: seatsNumbers,
             name,
-            cpf
+            cpf,
+            hour,
+            day
         });
         axios.post(`https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many`, orderInfo);
     }
@@ -98,7 +100,7 @@ export default function Session(props) {
                     <label>CPF do comprador:</label>
                     <input type="number" value={cpf} onChange={e => setCpf(e.target.value)} required placeholder='Digite seu CPF...' />
                     <button type="submit">
-                        <Link onClick={(e) => order(name, cpf, seatsPurchase, e,  sessionInfos.movie.title,sessionInfos.day.date,seatsNumbers, props.setOrderDetails)} to={`/sucesso`}>Reservar assento(s)</Link>
+                        <Link onClick={(e) => order(name, cpf, seatsPurchase, e,  sessionInfos.movie.title,sessionInfos.day.date,seatsNumbers, props.setOrderDetails, sessionInfos.name,sessionInfos.day.weekday)} to={`/sucesso`}>Reservar assento(s)</Link>
                     </button>
                 </form>
                 <Bottom>

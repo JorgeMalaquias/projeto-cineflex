@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 export default function Success(props) {
+    console.log(props.orderDetails);
     return (
         <Container>
             <div>Pedido feito
@@ -11,22 +12,21 @@ export default function Success(props) {
                 <div>
                     <div>Filme e sessão</div>
                     <div>
-                        <div>Enola Holmes</div>
-                        <div>24/06/2021 15:00</div>
+                        <div>{props.orderDetails.title}</div>
+                        <div>{props.orderDetails.day} {props.orderDetails.hour}</div>
                     </div>
                 </div>
                 <div>
                     <div>Ingressos</div>
                     <div>
-                        <div>Assento 15</div>
-                        <div>Assento 16</div>
+                        {props.orderDetails.seats.map((s, index)=><div key ={index}> Assento {s}</div>)}
                     </div>
                 </div>
                 <div>
                     <div>Comprador</div>
                     <div>
-                        <div>Nome: João da Silva Sauro</div>
-                        <div>CPF: 123.456.789-10</div>
+                        <div>Nome: {props.orderDetails.name}</div>
+                        <div>CPF: {props.orderDetails.cpf[0]}{props.orderDetails.cpf[1]}{props.orderDetails.cpf[2]}.{props.orderDetails.cpf[3]}{props.orderDetails.cpf[4]}{props.orderDetails.cpf[5]}.{props.orderDetails.cpf[6]}{props.orderDetails.cpf[7]}{props.orderDetails.cpf[8]}-{props.orderDetails.cpf[9]}{props.orderDetails.cpf[10]}</div>
                     </div>
                 </div>
             </Container2>
