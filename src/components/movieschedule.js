@@ -1,12 +1,11 @@
 import styled from 'styled-components';
-import movie1 from '../assets/img/image 3.png';
 import {React, useEffect, useState} from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
 function Time(props){
     return(
-            <Link to={"/"}>
+            <Link to={`/assentos/${props.st.id}`}>
                 <TimeTag key={props.index}>{props.st.name}</TimeTag>
             </Link>
 
@@ -55,7 +54,7 @@ export default function MovieSchedule(props){
     
 }
 const Schedules = styled.div`
-    margin-bottom: 110px;
+    margin-bottom: 120px;
     margin-left: 10px;
     a{
         text-decoration: none;
@@ -90,7 +89,6 @@ const Bottom = styled.div`
     }
 `
 const Container = styled.div`
-    
 `
 const Info = styled.div`
     font-family: 'Roboto', sans-serif;
