@@ -2,7 +2,6 @@ import { React, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
-import movie1 from "../assets/img/image 3.png";
 
 
 function isSelected(selected, n, available) {
@@ -15,16 +14,18 @@ function isSelected(selected, n, available) {
         }
     }
 }
-function select(available, setSelected, selected, seatsPurchase, id, setSeatsPurchase) {
+function select(available, setSelected, selected, seatsPurchase, id, setSeatsPurchase, setSeatsNumbers, seatsNumbers, name) {
     if (available === false) {
         alert("Esse assento não está disponível");
     } else {
         if (selected === false) {
             setSelected(!selected);
             setSeatsPurchase([...seatsPurchase, id]);
+            setSeatsNumbers([...seatsNumbers, name]);
         } else {
             setSelected(!selected);
             setSeatsPurchase(seatsPurchase.filter((e) => !(e === id)));
+            setSeatsNumbers(seatsNumbers.filter((e) => !(e === name)));
         }
     }
 }
@@ -32,29 +33,36 @@ function select(available, setSelected, selected, seatsPurchase, id, setSeatsPur
 function Seat(props) {
     const [selected, setSelected] = useState(false);
     return (
-        <SeatTag onClick={() => select(props.isAvailable, setSelected, selected, props.seatsPurchase, props.id, props.setSeatsPurchase)} selected={selected} isAvailable={props.isAvailable}>{props.name}</SeatTag>
+        <SeatTag onClick={() => select(props.isAvailable, setSelected, selected, props.seatsPurchase, props.id, props.setSeatsPurchase, props.setSeatsNumbers, props.seatsNumbers, props.name)} selected={selected} isAvailable={props.isAvailable}>{props.name}</SeatTag>
     );
 }
-function order(name,cpf,seatsPurchase, e){
-    e.preventDefault();
-    if(!(cpf.length===11)){
+function order(name, cpf, seatsPurchase, e, title, date, seatsNumbers, setOrderDetails) {
+    if (!(cpf.length === 11)) {
         alert("Cpf inválido");
     }
-    if(seatsPurchase.length===0){
+    if (seatsPurchase.length === 0) {
         alert("Selecione ao menos um assento");
-    }else{
+    } else {
         const orderInfo = {
-            ids : seatsPurchase,
+            ids: seatsPurchase,
             name,
             cpf
         }
-        axios.post(`https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many`,orderInfo);
+        setOrderDetails({
+            title,
+            date,
+            seats: seatsNumbers,
+            name,
+            cpf
+        });
+        axios.post(`https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many`, orderInfo);
     }
 }
-export default function Session() {
+export default function Session(props) {
     const { idSessao } = useParams();
     const [sessionInfos, setSessionInfos] = useState({});
     const [seatsPurchase, setSeatsPurchase] = useState([]);
+    const [seatsNumbers, setSeatsNumbers] = useState([]);
     const [name, setName] = useState("");
     const [cpf, setCpf] = useState("");
     useEffect(() => {
@@ -67,7 +75,7 @@ export default function Session() {
                 <Info>Selecione o(s) assento(s)</Info>
                 <div>
                     <Seats>
-                        {sessionInfos.seats.map((seat, index) => <Seat key={index} seatsPurchase={seatsPurchase} setSeatsPurchase={setSeatsPurchase} id={seat.id} name={seat.name} isAvailable={seat.isAvailable} />)}
+                        {sessionInfos.seats.map((seat, index) => <Seat key={index} seatsPurchase={seatsPurchase} setSeatsPurchase={setSeatsPurchase} seatsNumbers={seatsNumbers} setSeatsNumbers={setSeatsNumbers} id={seat.id} name={seat.name} isAvailable={seat.isAvailable} />)}
                     </Seats>
                     <Subtitle>
                         <div>
@@ -84,12 +92,14 @@ export default function Session() {
                         </div>
                     </Subtitle>
                 </div>
-                <form onSubmit={(e)=>order(name,cpf,seatsPurchase,e)}>
+                <form>
                     <label>Nome do comprador:</label>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder='Digite seu nome...'/>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder='Digite seu nome...' />
                     <label>CPF do comprador:</label>
-                    <input type="number" value={cpf} onChange={e => setCpf(e.target.value)} required placeholder='Digite seu CPF...'/>
-                    <button type="submit">Reservar assento(s)</button>
+                    <input type="number" value={cpf} onChange={e => setCpf(e.target.value)} required placeholder='Digite seu CPF...' />
+                    <button type="submit">
+                        <Link onClick={(e) => order(name, cpf, seatsPurchase, e,  sessionInfos.movie.title,sessionInfos.day.date,seatsNumbers, props.setOrderDetails)} to={`/sucesso`}>Reservar assento(s)</Link>
+                    </button>
                 </form>
                 <Bottom>
                     <img src={sessionInfos.movie.posterURL} alt={sessionInfos.movie.title}></img>
@@ -153,6 +163,11 @@ const Container = styled.div`
             letter-spacing: 0.04em;
             text-align: center;
             color: white;
+            a{
+                text-decoration: none;
+                color:white;
+    
+            }
         }
     }
 `

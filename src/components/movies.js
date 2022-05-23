@@ -17,7 +17,9 @@ function Movie(props) {
 
 
 
-export default function Movies() {
+export default function Movies(props) {
+    useEffect(()=>props.setOrderDetails({}),[]);
+    
     const [movies, setMovies] = useState([]);
 
 
