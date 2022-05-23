@@ -5,29 +5,69 @@ import styled from 'styled-components';
 import movie1 from "../assets/img/image 3.png";
 
 
-
-function Seat(props){
-    console.log(props.isAvailable);
-    return(
-        <SeatTag isAvailable={props.isAvailable}>{props.name}</SeatTag>
-    );
+function isSelected(selected, n, available) {
+    if (available === true) {
+        if (selected === true && n === 1) {
+            return ("#8DD7CF");
+        }
+        if (selected === true && n === 2) {
+            return ("1px solid #7B8B99");
+        }
+    }
+}
+function select(available, setSelected, selected, seatsPurchase, id, setSeatsPurchase) {
+    if (available === false) {
+        alert("Esse assento não está disponível");
+    } else {
+        if (selected === false) {
+            setSelected(!selected);
+            setSeatsPurchase([...seatsPurchase, id]);
+        } else {
+            setSelected(!selected);
+            setSeatsPurchase(seatsPurchase.filter((e) => !(e === id)));
+        }
+    }
 }
 
+function Seat(props) {
+    const [selected, setSelected] = useState(false);
+    return (
+        <SeatTag onClick={() => select(props.isAvailable, setSelected, selected, props.seatsPurchase, props.id, props.setSeatsPurchase)} selected={selected} isAvailable={props.isAvailable}>{props.name}</SeatTag>
+    );
+}
+function order(name,cpf,seatsPurchase, e){
+    e.preventDefault();
+    if(!(cpf.length===11)){
+        alert("Cpf inválido");
+    }
+    if(seatsPurchase.length===0){
+        alert("Selecione ao menos um assento");
+    }else{
+        const orderInfo = {
+            ids : seatsPurchase,
+            name,
+            cpf
+        }
+        axios.post(`https://mock-api.driven.com.br/api/v5/cineflex/seats/book-many`,orderInfo);
+    }
+}
 export default function Session() {
-    const {idSessao} = useParams();
-    const [sessionInfos,setSessionInfos]= useState({});
-    useEffect(()=>{
+    const { idSessao } = useParams();
+    const [sessionInfos, setSessionInfos] = useState({});
+    const [seatsPurchase, setSeatsPurchase] = useState([]);
+    const [name, setName] = useState("");
+    const [cpf, setCpf] = useState("");
+    useEffect(() => {
         const promise = axios.get(`https://mock-api.driven.com.br/api/v5/cineflex/showtimes/${idSessao}/seats`);
-        promise.then((promise)=>setSessionInfos(promise.data));
-    },[])
-    if(!(sessionInfos.id===undefined)){
-        console.log(sessionInfos);
+        promise.then((promise) => setSessionInfos(promise.data));
+    }, [])
+    if (!(sessionInfos.id === undefined)) {
         return (
             <Container>
                 <Info>Selecione o(s) assento(s)</Info>
                 <div>
                     <Seats>
-                        {sessionInfos.seats.map((seat,index)=><Seat key={index} name={seat.name} isAvailable={seat.isAvailable}/>)}
+                        {sessionInfos.seats.map((seat, index) => <Seat key={index} seatsPurchase={seatsPurchase} setSeatsPurchase={setSeatsPurchase} id={seat.id} name={seat.name} isAvailable={seat.isAvailable} />)}
                     </Seats>
                     <Subtitle>
                         <div>
@@ -44,7 +84,13 @@ export default function Session() {
                         </div>
                     </Subtitle>
                 </div>
-    
+                <form onSubmit={(e)=>order(name,cpf,seatsPurchase,e)}>
+                    <label>Nome do comprador:</label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder='Digite seu nome...'/>
+                    <label>CPF do comprador:</label>
+                    <input type="number" value={cpf} onChange={e => setCpf(e.target.value)} required placeholder='Digite seu CPF...'/>
+                    <button type="submit">Reservar assento(s)</button>
+                </form>
                 <Bottom>
                     <img src={sessionInfos.movie.posterURL} alt={sessionInfos.movie.title}></img>
                     <div>
@@ -55,15 +101,60 @@ export default function Session() {
             </Container>
         );
     }
-    return(
+    return (
         <div>LOADING...</div>
     );
 }
+
 
 const Container = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    input{
+        width: 320px;
+        height: 50px;
+        font-family: 'Roboto', sans-serif;
+        font-size: 18px;
+        font-style: italic;
+        font-weight: 400;
+        line-height: 21px;
+        letter-spacing: 0em;
+        text-align: left;
+        color: #AFAFAF;
+        border: 1px solid #D4D4D4
+    }
+    label{
+        font-family: 'Roboto', sans-serif;
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 21px;
+        letter-spacing: 0em;
+        text-align: left;
+        color: #293845;
+    }
+    form{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        button{
+            margin-top: 16px;
+            height: 42px;
+            width: 225px;
+            border-radius: 3px;
+            background-color: #E8833A;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 21px;
+            letter-spacing: 0.04em;
+            text-align: center;
+            color: white;
+        }
+    }
 `
 const Info = styled.div`
     font-family: 'Roboto', sans-serif;
@@ -72,7 +163,7 @@ const Info = styled.div`
     line-height: 28px;
     text-align: center;
     width: 100%;
-    height: 120px;
+    height: 100px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -95,8 +186,8 @@ const Seats = styled.div`
     }
 `
 const SeatTag = styled.div`
-    background-color: ${props => props.isAvailable===true ? "#C3CFD9":"#FBE192"};
-    border: 1px solid ${props => props.isAvailable===true ? "#7B8B99":"#F7C52B"};
+    background-color: ${props => props.isAvailable === true ? "#C3CFD9" : "#FBE192"};
+    border: 1px solid ${props => props.isAvailable === true ? "#7B8B99" : "#F7C52B"};
     display: flex;
     justify-content: center;
     align-items: center;
@@ -106,13 +197,15 @@ const SeatTag = styled.div`
     line-height: 13px;
     letter-spacing: 0.04em;
     text-align: center;
-
+    background-color: ${props => isSelected(props.selected, 1, props.isAvailable)};
+    border: ${props => isSelected(props.selected, 2, props.isAvailable)};
 `
 const Subtitle = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-around;
     width: 350px;
+    margin-bottom: 20px;
     > div{
         display: flex;
         flex-direction: column;
